@@ -4,11 +4,13 @@ export_presets.cfg.uid
 *.tmp
 *.log
 
-# Builds
-builds/
-*.apk
-*.aab
-*.pck
+# Builds - APKs ignored, but keep directory
+builds/*.apk
+builds/*.aab
+builds/*.pck
+builds/*.idsig
+builds/*.aligned.apk
+builds/*unsigned*.apk
 
 # Python
 __pycache__/
@@ -27,9 +29,11 @@ Thumbs.db
 *.swp
 *.swo
 
-# Secrets
+# Secrets - keep debug.jks for local continuity, but ignore other keystores
 debug.keystore
+release.keystore
 *.keystore
+!debug.jks
 !debug.keystore.example
 
 # Temporary
@@ -40,7 +44,4 @@ android/.gradle
 android/build
 android/app/build
 android/libs/
-android/build/
-android/.gradle
-android/app/build
 android/

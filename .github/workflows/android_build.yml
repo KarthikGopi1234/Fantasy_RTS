@@ -13,7 +13,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 50
     permissions:
       contents: write
     steps:
@@ -53,7 +53,7 @@ jobs:
           echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
           echo "$HOME/android-sdk/build-tools/34.0.0" >> $GITHUB_PATH
           yes | sdkmanager --licenses || true
-          sdkmanager --install "platform-tools" "build-tools;34.0.0" "platforms;android-34"
+          sdkmanager --install "platform-tools" "build-tools;34.0.0" "platforms;android-34" "cmdline-tools;latest"
 
       - name: Setup Godot
         run: |
@@ -66,30 +66,82 @@ jobs:
           wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz -O templates.tpz
           unzip -q templates.tpz
           mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          ls -lh ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
 
-      - name: Build Signed APK with Custom Logo
+      - name: Restore Keystore from Secret
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          # Create debug keystore JKS for proper signing
-          keytool -genkey -v -keystore debug.jks -storetype JKS -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Debug,O=Android,C=US" || true
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "Restoring keystore from secret..."
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > debug.jks
+            ls -lh debug.jks
+            echo "Keystore restored from secret for continuity"
+          else
+            echo "No secret found, using repo's debug.jks or creating new"
+            if [ ! -f debug.jks ]; then
+              keytool -genkey -v -keystore debug.jks -storetype JKS -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Aether Empires,O=AetherEmpires,C=US"
+            fi
+          fi
           ls -lh debug.jks
-          # Use our custom build script that properly signs and injects logo
-          python tools/build_signed_apk.py
+          keytool -list -keystore debug.jks -storepass android -v | head -n 20
+
+      - name: Build Real APK (Godot Export + Sign)
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          mkdir -p builds
+          # Try real Godot export first (gradle build)
+          echo "=== Attempting Godot Export (Gradle) ==="
+          ./godot --headless --path . --export-release "Android" builds/AetherEmpires_unsigned.apk --verbose 2>&1 | tail -n 100
+          ls -lh builds/ || true
+          
+          if [ -f builds/AetherEmpires_unsigned.apk ]; then
+            echo "Godot export produced APK: $(stat -c%s builds/AetherEmpires_unsigned.apk) bytes"
+            file builds/AetherEmpires_unsigned.apk
+          else
+            echo "Godot export failed to produce APK, trying non-gradle fallback via Python"
+            python tools/build_release_apk.py
+          fi
+          
+          # If unsigned exists but signed doesn't, sign it now
+          if [ -f builds/AetherEmpires_unsigned.apk ] && [ ! -f builds/AetherEmpires.apk ]; then
+            echo "Signing unsigned APK..."
+            $ANDROID_HOME/build-tools/34.0.0/zipalign -v -p 4 builds/AetherEmpires_unsigned.apk builds/AetherEmpires_aligned.apk || cp builds/AetherEmpires_unsigned.apk builds/AetherEmpires_aligned.apk
+            $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks debug.jks --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --out builds/AetherEmpires.apk builds/AetherEmpires_aligned.apk
+          fi
+          
+          # If still no signed APK, use Python full pipeline
+          if [ ! -f builds/AetherEmpires.apk ]; then
+            echo "No signed APK yet, running full Python build pipeline"
+            python tools/build_release_apk.py
+          fi
+          
+          echo "=== Final Builds ==="
           ls -lh builds/
-          file builds/AetherEmpires.apk
-          # Verify signature
+          file builds/*.apk || true
+          echo "=== Verify Signature ==="
           $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose builds/AetherEmpires.apk || true
+          echo "=== Check APK contents ==="
+          unzip -l builds/AetherEmpires.apk | grep -E "mipmap|MANIFEST|assets|pck" | head -n 50
+          echo "=== Check for PCK ==="
+          unzip -l builds/AetherEmpires.apk | grep -i pck | head -n 20
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: builds/*.apk
+          if-no-files-found: error
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          files: builds/*.apk
+          files: builds/AetherEmpires.apk
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
