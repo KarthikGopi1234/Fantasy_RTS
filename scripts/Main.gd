@@ -2,7 +2,7 @@ extends Node2D
 
 # Main scene controller
 
-@onready var world: World = $World
+@onready var world = $World
 @onready var ui: CanvasLayer = $MainUI
 
 func _ready():

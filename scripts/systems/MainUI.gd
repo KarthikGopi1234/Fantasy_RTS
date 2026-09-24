@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-# Main UI - Fantasy AoE style HUD
+# Main UI - Fantasy AoE style HUD - Fixed for headless check
 
 @onready var resource_labels: Dictionary = {}
 @onready var population_label: Label
@@ -28,7 +28,6 @@ func _ready():
 	_update_population()
 
 func _setup_ui():
-	# Top bar - resources
 	var top_bar = get_node_or_null("TopBar")
 	if not top_bar:
 		return
@@ -48,11 +47,9 @@ func _setup_ui():
 	unit_menu = get_node_or_null("UnitMenu/Grid")
 	minimap = get_node_or_null("MinimapPanel/Minimap")
 	
-	# Build menu buttons
 	_setup_build_menu()
 	_setup_unit_menu()
 	
-	# Age up button
 	var age_btn = get_node_or_null("TopBar/AgeUpButton")
 	if age_btn:
 		age_btn.pressed.connect(_on_age_up_pressed)
@@ -61,7 +58,6 @@ func _setup_build_menu():
 	if not build_menu:
 		return
 	
-	# Clear existing
 	for child in build_menu.get_children():
 		child.queue_free()
 	
@@ -115,16 +111,16 @@ func _on_selection_changed(selected: Array):
 	selection_panel.visible = true
 	if selected.size() == 1:
 		var obj = selected[0]
-		if obj is BaseUnit:
-			selection_label.text = "%s\nHP: %d/%d\nATK: %d" % [obj.unit_type.capitalize(), obj.hp, obj.max_hp, obj.attack_damage]
-		elif obj is BaseBuilding:
-			selection_label.text = "%s\nHP: %d/%d" % [obj.building_type.capitalize(), obj.hp, obj.max_hp]
-			if obj.production_queue.size() > 0:
-				selection_label.text += "\nQueue: %s" % ", ".join(obj.production_queue)
+		if obj.is_in_group("units"):
+			selection_label.text = "%s\nHP: %d/%d\nATK: %d" % [obj.get("unit_type"), obj.get("hp"), obj.get("max_hp"), obj.get("attack_damage")]
+		elif obj.is_in_group("buildings"):
+			selection_label.text = "%s\nHP: %d/%d" % [obj.get("building_type"), obj.get("hp"), obj.get("max_hp")]
+			if obj.get("production_queue").size() > 0:
+				selection_label.text += "\nQueue: %s" % ", ".join(obj.get("production_queue"))
 	else:
 		selection_label.text = "%d units selected" % selected.size()
 
-func _on_age_advanced(new_age: int):
+func _on_age_advanced(_new_age: int):
 	_update_age_label()
 
 func _update_age_label():
@@ -158,17 +154,6 @@ func _update_unit_buttons():
 		var unlocked = TechTree.is_unit_unlocked(u_type)
 		var cost = TechTree.unit_stats.get(u_type, {}).get("cost", {})
 		var can_afford = ResourceManager.can_afford(cost)
-		var has_building_selected = false
-		for b in GameManager.selected_buildings:
-			if is_instance_valid(b) and b is BaseBuilding:
-				has_building_selected = true
-				break
-		
-		# If no building selected, disable all
-		if GameManager.selected_buildings.size() == 0 and GameManager.selected_units.size() == 0:
-			# Allow town hall production from UI even without selection? Disable for now
-			pass
-		
 		btn.disabled = not unlocked or not can_afford
 		btn.modulate = Color(1,1,1,1) if unlocked else Color(1,1,1,0.4)
 
@@ -178,18 +163,16 @@ func _on_build_button_pressed(building_type: String):
 
 func _on_unit_button_pressed(unit_type: String):
 	print("Unit button: ", unit_type)
-	# If building selected, queue in that building
 	if GameManager.selected_buildings.size() > 0:
 		for b in GameManager.selected_buildings:
-			if is_instance_valid(b) and b is BaseBuilding:
+			if is_instance_valid(b) and b.has_method("queue_unit"):
 				b.queue_unit(unit_type)
 				break
 	else:
-		# Find town hall and queue there
 		var town_halls = get_tree().get_nodes_in_group("player_buildings")
 		for bh in town_halls:
-			if is_instance_valid(bh) and bh.building_type == "town_hall":
-				if bh.queue_unit(unit_type):
+			if is_instance_valid(bh) and bh.get("building_type") == "town_hall":
+				if bh.has_method("queue_unit") and bh.queue_unit(unit_type):
 					break
 
 func _on_age_up_pressed():
