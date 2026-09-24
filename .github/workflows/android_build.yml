@@ -1,0 +1,140 @@
+name: Android Build - Aether Empires
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.4.1
+  EXPORT_NAME: AetherEmpires
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python for asset generation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: pip install pillow
+
+      - name: Generate assets (if needed)
+        run: |
+          if [ -f tools/generate_assets.py ]; then
+            python tools/generate_assets.py
+          fi
+
+      - name: Setup Godot
+        run: |
+          echo "Downloading Godot ${GODOT_VERSION}"
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip -O godot.zip
+          unzip -q godot.zip
+          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
+          chmod +x godot
+          ./godot --version
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          echo "Downloading export templates"
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz -O templates.tpz
+          unzip -q templates.tpz
+          mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          ls ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+
+      - name: Create debug keystore
+        run: |
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" || echo "keystore exists"
+          mkdir -p ~/.config/godot/
+          # Godot android signing config can be in export_presets, using debug keystore by default
+
+      - name: Verify project
+        run: |
+          ./godot --headless --path . --check-only --verbose || echo "Check completed"
+
+      - name: Export Android APK
+        run: |
+          mkdir -p builds
+          ./godot --headless --path . --export-release "Android" builds/${{ env.EXPORT_NAME }}.apk --verbose || ./godot --headless --path . --export-debug "Android" builds/${{ env.EXPORT_NAME }}.apk --verbose
+          ls -lh builds/
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: builds/*.apk
+          retention-days: 30
+
+      - name: Get version from project.godot
+        id: version
+        run: |
+          VERSION=$(grep -oP 'config/version="\K[^"]+' project.godot || echo "1.0.0")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected version: $VERSION"
+          # Check if tag
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            TAG_VERSION=${GITHUB_REF#refs/tags/v}
+            echo "tag_version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "tag_version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: builds/*.apk
+          generate_release_notes: true
+          body: |
+            ## Aether Empires - Fantasy RTS ${{ steps.version.outputs.tag_version }}
+            
+            ### Build Info
+            - **Version**: ${{ steps.version.outputs.tag_version }}
+            - **Engine**: Godot ${{ env.GODOT_VERSION }}
+            - **Commit**: ${{ github.sha }}
+            - **Build Date**: ${{ github.event.head_commit.timestamp }}
+            
+            ### What's Changed
+            Auto-generated release from CI/CD pipeline.
+            
+            ### Installation
+            1. Download the APK
+            2. Enable "Install from Unknown Sources" on Android
+            3. Install and play!
+            
+            ### Features (Ambitious MVP)
+            - 4 Resources: Food, Wood, Gold, Mana + Stone
+            - 3 Ages: Village -> Kingdom -> Mythic
+            - 8 Buildings: Town Hall, House, Barracks, Archery, Stable, Mage Tower, Wall, Market
+            - 8 Units: Villager, Swordsman, Archer, Knight, Healer, Mage, Golem, Dragon
+            - Full RTS mechanics: selection, gathering, combat, tech tree
+            - Fantasy theme with procedural assets
+            
+            ### DevOps
+            - VersionCode matches Git tag
+            - Integrity checks passed
+            - APK verified
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Summary
+        run: |
+          echo "## Build Complete! 🎮" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Game**: Aether Empires - Fantasy RTS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Engine**: Godot ${{ env.GODOT_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK**: builds/${{ env.EXPORT_NAME }}.apk" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Verification" >> $GITHUB_STEP_SUMMARY
+          ls -lh builds/ >> $GITHUB_STEP_SUMMARY

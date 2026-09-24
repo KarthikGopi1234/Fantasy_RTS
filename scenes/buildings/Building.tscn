@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://building123456"]
+
+[ext_resource type="Script" path="res://scripts/buildings/BaseBuilding.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="1_rect"]
+size = Vector2(80, 80)
+
+[node name="Building" type="StaticBody2D"]
+script = ExtResource("1")
+building_type = "house"
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+shape = SubResource("1_rect")

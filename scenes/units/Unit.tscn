@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://unit123456789"]
+
+[ext_resource type="Script" path="res://scripts/units/BaseUnit.gd" id="1"]
+
+[sub_resource type="CircleShape2D" id="1_shape"]
+radius = 16.0
+
+[node name="Unit" type="CharacterBody2D"]
+script = ExtResource("1")
+unit_type = "villager"
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+shape = SubResource("1_shape")

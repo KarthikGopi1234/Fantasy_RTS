@@ -1,0 +1,258 @@
+[gd_scene load_steps=8 format=3 uid="uid://main1234567890"]
+
+[ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/systems/World.gd" id="2_world"]
+[ext_resource type="Script" path="res://scripts/systems/MapGenerator.gd" id="3_mapgen"]
+[ext_resource type="Script" path="res://scripts/systems/MainUI.gd" id="4_ui"]
+
+[sub_resource type="StyleBoxFlat" id="1_style"]
+bg_color = Color(0.2, 0.15, 0.1, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.5, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="2_selection"]
+bg_color = Color(0, 1, 0, 0.15)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 1, 0, 0.8)
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="World" type="Node2D" parent="."]
+script = ExtResource("2_world")
+
+[node name="Units" type="Node2D" parent="World"]
+
+[node name="Buildings" type="Node2D" parent="World"]
+
+[node name="Resources" type="Node2D" parent="World"]
+
+[node name="MapGenerator" type="Node2D" parent="World"]
+script = ExtResource("3_mapgen")
+map_width = 2000
+map_height = 2000
+
+[node name="Camera2D" type="Camera2D" parent="World"]
+zoom = Vector2(1, 1)
+position = Vector2(400, 400)
+limit_smoothed = true
+position_smoothing_enabled = true
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="World"]
+
+[node name="SelectionBox" type="Panel" parent="World/CanvasLayer"]
+visible = false
+custom_minimum_size = Vector2(10, 10)
+mouse_filter = 2
+add_theme_stylebox_override("panel", SubResource("2_selection"))
+
+[node name="Background" type="ColorRect" parent="."]
+color = Color(0.156863, 0.298039, 0.2, 1)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+z_index = -10
+
+[node name="MainUI" type="CanvasLayer" parent="."]
+script = ExtResource("4_ui")
+
+[node name="TopBar" type="Panel" parent="MainUI"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 60.0
+grow_horizontal = 2
+add_theme_stylebox_override("panel", SubResource("1_style"))
+
+[node name="FoodLabel" type="Label" parent="MainUI/TopBar"]
+offset_left = 10.0
+offset_top = 8.0
+offset_right = 130.0
+offset_bottom = 28.0
+text = "Food: 500"
+add_theme_font_size_override("font_size", 14)
+
+[node name="WoodLabel" type="Label" parent="MainUI/TopBar"]
+offset_left = 140.0
+offset_top = 8.0
+offset_right = 260.0
+offset_bottom = 28.0
+text = "Wood: 400"
+add_theme_font_size_override("font_size", 14)
+
+[node name="GoldLabel" type="Label" parent="MainUI/TopBar"]
+offset_left = 270.0
+offset_top = 8.0
+offset_right = 390.0
+offset_bottom = 28.0
+text = "Gold: 300"
+add_theme_font_size_override("font_size", 14)
+
+[node name="ManaLabel" type="Label" parent="MainUI/TopBar"]
+offset_left = 400.0
+offset_top = 8.0
+offset_right = 520.0
+offset_bottom = 28.0
+text = "Mana: 200"
+add_theme_font_size_override("font_size", 14)
+
+[node name="StoneLabel" type="Label" parent="MainUI/TopBar"]
+offset_left = 530.0
+offset_top = 8.0
+offset_right = 650.0
+offset_bottom = 28.0
+text = "Stone: 200"
+add_theme_font_size_override("font_size", 14)
+
+[node name="PopulationLabel" type="Label" parent="MainUI/TopBar"]
+offset_left = 670.0
+offset_top = 8.0
+offset_right = 770.0
+offset_bottom = 28.0
+text = "Pop: 3/10"
+add_theme_font_size_override("font_size", 14)
+
+[node name="AgeLabel" type="Label" parent="MainUI/TopBar"]
+offset_left = 800.0
+offset_top = 8.0
+offset_right = 960.0
+offset_bottom = 28.0
+text = "Village Age"
+add_theme_font_size_override("font_size", 16)
+
+[node name="TimeLabel" type="Label" parent="MainUI/TopBar"]
+offset_left = 980.0
+offset_top = 8.0
+offset_right = 1060.0
+offset_bottom = 28.0
+text = "00:00"
+add_theme_font_size_override("font_size", 14)
+
+[node name="AgeUpButton" type="Button" parent="MainUI/TopBar"]
+offset_left = 1080.0
+offset_top = 6.0
+offset_right = 1200.0
+offset_bottom = 32.0
+text = "Age Up"
+
+[node name="SelectionPanel" type="Panel" parent="MainUI"]
+visible = false
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = -200.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_vertical = 0
+grow_horizontal = 0
+add_theme_stylebox_override("panel", SubResource("1_style"))
+
+[node name="SelectionLabel" type="Label" parent="MainUI/SelectionPanel"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 280.0
+offset_bottom = 180.0
+text = "No selection"
+add_theme_font_size_override("font_size", 14)
+autowrap_mode = 3
+
+[node name="BuildMenu" type="Panel" parent="MainUI"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -500.0
+offset_top = -200.0
+offset_right = -310.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 0
+add_theme_stylebox_override("panel", SubResource("1_style"))
+
+[node name="Label" type="Label" parent="MainUI/BuildMenu"]
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 20.0
+text = "Build"
+add_theme_font_size_override("font_size", 12)
+
+[node name="Grid" type="GridContainer" parent="MainUI/BuildMenu"]
+offset_left = 6.0
+offset_top = 22.0
+offset_right = 184.0
+offset_bottom = 180.0
+columns = 2
+
+[node name="UnitMenu" type="Panel" parent="MainUI"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -800.0
+offset_top = -200.0
+offset_right = -510.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 0
+add_theme_stylebox_override("panel", SubResource("1_style"))
+
+[node name="Label" type="Label" parent="MainUI/UnitMenu"]
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 180.0
+offset_bottom = 20.0
+text = "Train"
+add_theme_font_size_override("font_size", 12)
+
+[node name="Grid" type="GridContainer" parent="MainUI/UnitMenu"]
+offset_left = 6.0
+offset_top = 22.0
+offset_right = 284.0
+offset_bottom = 180.0
+columns = 2
+
+[node name="MinimapPanel" type="Panel" parent="MainUI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -210.0
+offset_top = 70.0
+offset_right = -10.0
+offset_bottom = 270.0
+grow_horizontal = 0
+add_theme_stylebox_override("panel", SubResource("1_style"))
+
+[node name="Minimap" type="ColorRect" parent="MainUI/MinimapPanel"]
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 195.0
+offset_bottom = 195.0
+color = Color(0.1, 0.2, 0.1, 1)
+
+[node name="HelpLabel" type="Label" parent="MainUI"]
+offset_left = 10.0
+offset_top = 70.0
+offset_right = 400.0
+offset_bottom = 150.0
+text = "Left-drag: Select | Right-click: Move/Attack/Gather | Build menu: Place buildings"
+add_theme_font_size_override("font_size", 12)
+modulate = Color(1, 1, 1, 0.7)
