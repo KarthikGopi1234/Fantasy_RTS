@@ -54,6 +54,7 @@ jobs:
           echo "$HOME/android-sdk/build-tools/34.0.0" >> $GITHUB_PATH
           yes | sdkmanager --licenses || true
           sdkmanager --install "platform-tools" "build-tools;34.0.0" "platforms;android-34" "cmdline-tools;latest"
+          ls -lh $HOME/android-sdk/build-tools/34.0.0/
 
       - name: Setup Godot
         run: |
@@ -66,69 +67,77 @@ jobs:
           wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz -O templates.tpz
           unzip -q templates.tpz
           mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
-          ls -lh ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          ls -lh ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/ | head -n 20
 
       - name: Restore Keystore from Secret
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
-            echo "Restoring keystore from secret..."
+            echo "Restoring keystore from secret for continuity..."
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > debug.jks
-            ls -lh debug.jks
-            echo "Keystore restored from secret for continuity"
+            echo "Keystore restored from secret"
           else
-            echo "No secret found, using repo's debug.jks or creating new"
-            if [ ! -f debug.jks ]; then
-              keytool -genkey -v -keystore debug.jks -storetype JKS -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Aether Empires,O=AetherEmpires,C=US"
-            fi
+            echo "No secret, using repo's debug.jks"
+          fi
+          if [ ! -f debug.jks ]; then
+            echo "Creating new JKS keystore..."
+            keytool -genkey -v -keystore debug.jks -storetype JKS -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Aether Empires,O=AetherEmpires,C=US"
           fi
           ls -lh debug.jks
           keytool -list -keystore debug.jks -storepass android -v | head -n 20
+          # Setup Godot keystores for signing
+          mkdir -p ~/.local/share/godot/keystores/
+          cp debug.jks ~/.local/share/godot/keystores/debug.keystore
+          cp debug.jks ~/.local/share/godot/keystores/release.keystore
+          ls -lh ~/.local/share/godot/keystores/
+          # Configure Godot editor settings for Android SDK and keystore
+          mkdir -p ~/.config/godot/
+          cat > ~/.config/godot/editor_settings-4.4.tres << EOF
+          [gd_resource type="EditorSettings" load_steps=2 format=3]
 
-      - name: Build Real APK (Godot Export + Sign)
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          [sub_resource type="InputEventKey" id="InputEventKey_6esip"]
+          keycode = 4194326
+
+          [resource]
+          export/android/debug_keystore = "/home/runner/.local/share/godot/keystores/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          export/android/release_keystore = "/home/runner/.local/share/godot/keystores/release.keystore"
+          export/android/release_keystore_user = "androiddebugkey"
+          export/android/release_keystore_pass = "android"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          export/android/android_sdk_path = "$HOME/android-sdk"
+          EOF
+          cat ~/.config/godot/editor_settings-4.4.tres
+
+      - name: Build APK (Non-Gradle Legacy - Reliable)
         run: |
           mkdir -p builds
-          # Try real Godot export first (gradle build)
-          echo "=== Attempting Godot Export (Gradle) ==="
-          ./godot --headless --path . --export-release "Android" builds/AetherEmpires_unsigned.apk --verbose 2>&1 | tail -n 100
-          ls -lh builds/ || true
-          
-          if [ -f builds/AetherEmpires_unsigned.apk ]; then
-            echo "Godot export produced APK: $(stat -c%s builds/AetherEmpires_unsigned.apk) bytes"
-            file builds/AetherEmpires_unsigned.apk
-          else
-            echo "Godot export failed to produce APK, trying non-gradle fallback via Python"
-            python tools/build_release_apk.py
-          fi
-          
-          # If unsigned exists but signed doesn't, sign it now
-          if [ -f builds/AetherEmpires_unsigned.apk ] && [ ! -f builds/AetherEmpires.apk ]; then
-            echo "Signing unsigned APK..."
-            $ANDROID_HOME/build-tools/34.0.0/zipalign -v -p 4 builds/AetherEmpires_unsigned.apk builds/AetherEmpires_aligned.apk || cp builds/AetherEmpires_unsigned.apk builds/AetherEmpires_aligned.apk
-            $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks debug.jks --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --out builds/AetherEmpires.apk builds/AetherEmpires_aligned.apk
-          fi
-          
-          # If still no signed APK, use Python full pipeline
-          if [ ! -f builds/AetherEmpires.apk ]; then
-            echo "No signed APK yet, running full Python build pipeline"
-            python tools/build_release_apk.py
-          fi
-          
-          echo "=== Final Builds ==="
+          echo "=== Godot Export Preset ==="
+          cat export_presets.cfg
+          echo "=== Project Settings ==="
+          grep -E "config/name|config/version|vram_compression" project.godot
+          echo "=== Attempting Godot Export (Non-Gradle, produces correct package and icon) ==="
+          ./godot --headless --path . --export-release "Android" builds/AetherEmpires.apk --verbose 2>&1 | tee godot_export.log
+          echo "=== Export Log Tail ==="
+          tail -n 100 godot_export.log
+          echo "=== Builds ==="
           ls -lh builds/
           file builds/*.apk || true
+          if [ ! -f builds/AetherEmpires.apk ]; then
+            echo "Export failed, trying Python fallback"
+            python tools/build_release_apk.py
+            ls -lh builds/
+          fi
           echo "=== Verify Signature ==="
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose builds/AetherEmpires.apk || true
-          echo "=== Check APK contents ==="
-          unzip -l builds/AetherEmpires.apk | grep -E "mipmap|MANIFEST|assets|pck" | head -n 50
-          echo "=== Check for PCK ==="
-          unzip -l builds/AetherEmpires.apk | grep -i pck | head -n 20
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose builds/AetherEmpires.apk
+          echo "=== Check Package Name ==="
+          $ANDROID_HOME/build-tools/34.0.0/aapt dump badging builds/AetherEmpires.apk | grep -E "package|version|application-label" | head -n 20
+          echo "=== Check Icons ==="
+          unzip -l builds/AetherEmpires.apk | grep mipmap | head -n 20
+          echo "=== Check Size ==="
+          du -h builds/AetherEmpires.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

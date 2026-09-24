@@ -15,7 +15,7 @@ config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.png"
 boot_splash/bg_color=Color(0.141176, 0.105882, 0.235294, 1)
 config/name="Aether Empires"
-config/version="1.0.11"
+config/version="1.0.12"
 
 [autoload]
 
@@ -65,3 +65,6 @@ renderer/rendering_method="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.156863, 0.298039, 0.2, 1)
 textures/canvas_textures/default_texture_filter=2
 textures/canvas_textures/default_texture_repeat=0
+textures/vram_compression/import_etc2_astc=true
+textures/vram_compression/import_etc=true
+textures/vram_compression/import_s3tc=true

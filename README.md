@@ -1,13 +1,13 @@
 # Aether Empires - Fantasy RTS
 
-![Version](https://img.shields.io/badge/version-1.0.11-blue)
+![Version](https://img.shields.io/badge/version-1.0.12-blue)
 ![Engine](https://img.shields.io/badge/engine-Godot%204.4-green)
 ![Platform](https://img.shields.io/badge/platform-Android-orange)
 ![Build](https://github.com/KarthikGopi1234/Fantasy_RTS/actions/workflows/android_build.yml/badge.svg)
 
 **A mobile-first real-time strategy game reminiscent of Age of Empires, with a fantasy mythic twist. Built for Android.**
 
-> **Latest APK:** [v1.0.11 Release](https://github.com/KarthikGopi1234/Fantasy_RTS/releases/latest) - Properly signed, custom logo, installs correctly.
+> **Latest APK:** [v1.0.12 Release](https://github.com/KarthikGopi1234/Fantasy_RTS/releases/latest) - Properly signed, custom logo, installs correctly.
 
 ## 🎮 Game Overview
 
@@ -64,7 +64,7 @@ In the realm of Aetheria, mana flows as a resource alongside traditional materia
 4. Install APK - **Signed with persistent keystore, custom fantasy castle logo**
 
 ### Build Status
-- **v1.0.11** - ✅ Properly signed APK with custom logo, real Godot export, persistent keystore secret
+- **v1.0.12** - ✅ Properly signed APK with custom logo, real Godot export, persistent keystore secret
 - **v1.0.10** - ⚠️ Signed but used template APK (showed as godot-project-name-en)
 - **v1.0.9** - ⚠️ Unsigned fallback, no logo
 
@@ -95,7 +95,7 @@ Fantasy_RTS/
 ├── .github/workflows/
 │   └── android_build.yml       # CI/CD: Java 17, SDK 34, Godot 4.4.1, persistent keystore
 ├── export_presets.cfg          # Android: com.aetherempires.fantasyrts, landscape, arm64-v8a
-├── project.godot               # Godot 4.4, v1.0.11
+├── project.godot               # Godot 4.4, v1.0.12
 ├── icon.png                    # 512x512 fantasy castle (custom)
 └── debug.jks                   # Persistent JKS keystore (also stored as GitHub Secret)
 ```
@@ -108,7 +108,7 @@ Fantasy_RTS/
 - Signing key stored as **GitHub Secret** `ANDROID_KEYSTORE_BASE64` for continuity between versions
 
 ### 2. Version Matching - Tag == VersionCode == VersionName
-- Git tag `v1.0.11` == `VERSION` file == `project.godot/config/version` == `export_presets.cfg/version/name` == `version/code=12`
+- Git tag `v1.0.12` == `VERSION` file == `project.godot/config/version` == `export_presets.cfg/version/name` == `version/code=12`
 - Version only bumped on **successful** build (fixed from v1.0.0-1.0.9 failures)
 - Release notes auto-generated
 
@@ -183,7 +183,7 @@ export ANDROID_HOME=$HOME/android-sdk
 
 ## 📦 Releases
 
-- **v1.0.11** (code 12) - **CURRENT** - Real Godot export, properly signed with persistent keystore secret, custom logo, package com.aetherempires.fantasyrts, name "Aether Empires", installs correctly
+- **v1.0.12** (code 12) - **CURRENT** - Real Godot export, properly signed with persistent keystore secret, custom logo, package com.aetherempires.fantasyrts, name "Aether Empires", installs correctly
 - **v1.0.10** (code 11) - Signed but used template APK only (bug: godot-project-name-en, default icon, install failed)
 - **v1.0.9** (code 10) - First successful artifact (122M) but unsigned, no logo, fallback method
 - **v1.0.0-1.0.8** - Failed builds (SDK setup, gradle issues, GH001 errors)
