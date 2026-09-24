@@ -45,6 +45,9 @@ jobs:
           mv cmdline-tools latest
           mkdir -p cmdline-tools
           mv latest cmdline-tools/
+          export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
           echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
           echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
@@ -52,6 +55,7 @@ jobs:
           echo "$HOME/android-sdk/build-tools/34.0.0" >> $GITHUB_PATH
           yes | sdkmanager --licenses || true
           sdkmanager --install "platform-tools" "build-tools;34.0.0" "platforms;android-34"
+          ls $HOME/android-sdk/build-tools/
 
       - name: Setup Godot
         run: |
@@ -67,14 +71,10 @@ jobs:
 
       - name: Install Android build template
         run: |
-          echo "Ensuring Android build template with libs..."
-          # Always reinstall to ensure libs present (since repo excludes libs due to size)
           rm -rf android
           mkdir -p android
           unzip -q ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/android_source.zip -d android
-          ls -lh android/ | head -20
-          ls -lh android/libs/ || echo "No libs"
-          echo "Template installed"
+          ls android/ | head -20
 
       - name: Configure Godot
         run: |
@@ -103,7 +103,6 @@ jobs:
           fi
           if [ -f builds/AetherEmpires.apk ]; then
             echo "APK SUCCESS"
-            file builds/AetherEmpires.apk
           else
             echo "FAILED"
             exit 1
