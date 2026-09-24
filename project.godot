@@ -16,7 +16,7 @@ config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.png"
 boot_splash/bg_color=Color(0.141176, 0.105882, 0.235294, 1)
 config/name="Aether Empires"
-config/version="1.0.5"
+config/version="1.0.6"
 
 [autoload]
 
