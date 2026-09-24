@@ -35,3 +35,11 @@ debug.keystore
 # Temporary
 /tmp/
 *.import
+logs.zip
+android/.gradle
+android/build
+android/app/build
+android/libs/
+android/build/
+android/.gradle
+android/app/build

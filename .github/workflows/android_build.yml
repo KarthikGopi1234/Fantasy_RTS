@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Python deps
+      - name: Install deps
         run: pip install pillow
 
       - name: Generate assets
@@ -46,14 +46,13 @@ jobs:
           mkdir -p cmdline-tools
           mv latest cmdline-tools/
           export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
           echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
           echo "$HOME/android-sdk/build-tools/34.0.0" >> $GITHUB_PATH
           yes | sdkmanager --licenses || true
-          sdkmanager --install "platform-tools" "build-tools;34.0.0" "platforms;android-34" "platforms;android-33"
+          sdkmanager --install "platform-tools" "build-tools;34.0.0" "platforms;android-34"
 
       - name: Setup Godot
         run: |
@@ -66,6 +65,18 @@ jobs:
           wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz -O templates.tpz
           unzip -q templates.tpz
           mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+
+      - name: Install Android build template if missing
+        run: |
+          if [ ! -d android ]; then
+            echo "Installing Android build template..."
+            mkdir -p android
+            unzip -q ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/android_source.zip -d android
+            ls -lh android/
+          else
+            echo "Android template already exists"
+            ls -lh android/ | head -20
+          fi
 
       - name: Configure Godot
         run: |
@@ -86,25 +97,19 @@ jobs:
       - name: Export APK
         run: |
           mkdir -p builds
-          echo "=== Trying export with gradle ==="
+          echo "Exporting..."
           ./godot --headless --path . --export-debug "Android" builds/AetherEmpires.apk --verbose 2>&1 | tail -100 || true
-          ls -lh builds/ || true
+          ls -lh builds/
           if [ ! -f builds/AetherEmpires.apk ]; then
-            echo "First export failed, trying release..."
+            echo "Trying release..."
             ./godot --headless --path . --export-release "Android" builds/AetherEmpires.apk --verbose 2>&1 | tail -100 || true
-            ls -lh builds/ || true
+            ls -lh builds/
           fi
           if [ -f builds/AetherEmpires.apk ]; then
-            echo "APK SUCCESS"
+            echo "APK OK"
             file builds/AetherEmpires.apk
-            ls -lh builds/AetherEmpires.apk
           else
-            echo "Both exports failed, trying to build PCK and create dummy APK structure for verification"
-            ./godot --headless --path . --export-pack "Android" builds/AetherEmpires.pck --verbose 2>&1 | tail -50 || true
-            # Create a valid APK placeholder that at least passes artifact check - but we will fail job to indicate need for fix
-            echo "Build failed - creating info"
-            echo "Version $(grep -oP 'config/version=\"\K[^\"]+' project.godot)" > builds/BUILD_INFO.txt
-            ls -lh builds/
+            echo "FAILED"
             exit 1
           fi
 
