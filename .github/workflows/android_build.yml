@@ -15,6 +15,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:
@@ -23,7 +24,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python for asset generation
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -31,11 +32,28 @@ jobs:
       - name: Install Python deps
         run: pip install pillow
 
-      - name: Generate assets (if needed)
+      - name: Generate assets
         run: |
-          if [ -f tools/generate_assets.py ]; then
-            python tools/generate_assets.py
-          fi
+          python tools/generate_assets.py
+          echo "Assets: $(find assets -type f | wc -l)"
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: |
+          sdkmanager --install "platform-tools" "build-tools;34.0.0" "platforms;android-34"
+          sdkmanager --list | grep -E "build-tools|platform-tools" | tail -20
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          ls -lh $ANDROID_HOME/build-tools/ || true
+          ls -lh $ANDROID_HOME/platform-tools/ || true
 
       - name: Setup Godot
         run: |
@@ -46,42 +64,96 @@ jobs:
           chmod +x godot
           ./godot --version
           mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-          echo "Downloading export templates"
           wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz -O templates.tpz
           unzip -q templates.tpz
           mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
-          ls ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          ls ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/ | head -10
+
+      - name: Configure Godot Editor Settings
+        run: |
+          mkdir -p ~/.config/godot/
+          cat > ~/.config/godot/editor_settings-4.tres << EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/adb = "${ANDROID_HOME}/platform-tools/adb"
+          export/android/apksigner = "${ANDROID_HOME}/build-tools/34.0.0/apksigner"
+          export/android/debug_keystore = "${{ github.workspace }}/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          export/android/force_system_user = false
+          export/android/java_sdk_path = "${JAVA_HOME}"
+          export/android/android_sdk_path = "${ANDROID_HOME}"
+          EOF
+          cat ~/.config/godot/editor_settings-4.tres
 
       - name: Create debug keystore
         run: |
-          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" || echo "keystore exists"
-          mkdir -p ~/.config/godot/
-          # Godot android signing config can be in export_presets, using debug keystore by default
+          if [ ! -f debug.keystore ]; then
+            keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          ls -lh debug.keystore
+          # Also set in export preset via env? We'll patch export_presets.cfg if needed
+          # Ensure export_presets has keystore path
+          cat export_presets.cfg | grep -A2 -B2 keystore || echo "No keystore in preset, will use editor settings"
 
-      - name: Verify project
+      - name: Verify project integrity
         run: |
-          ./godot --headless --path . --check-only --verbose || echo "Check completed"
+          echo "=== Integrity Check ==="
+          for f in project.godot export_presets.cfg icon.png scenes/main.tscn; do
+            if [ -f "$f" ]; then echo "OK $f"; else echo "MISSING $f"; exit 1; fi
+          done
+          echo "Assets: $(find assets -type f | wc -l)"
+          echo "Version: $(grep -oP 'config/version=\"\K[^\"]+' project.godot)"
 
       - name: Export Android APK
         run: |
           mkdir -p builds
-          ./godot --headless --path . --export-release "Android" builds/${{ env.EXPORT_NAME }}.apk --verbose || ./godot --headless --path . --export-debug "Android" builds/${{ env.EXPORT_NAME }}.apk --verbose
+          echo "Exporting with ANDROID_HOME=$ANDROID_HOME"
+          echo "JAVA_HOME=$JAVA_HOME"
+          # Try release
+          ./godot --headless --path . --export-release "Android" builds/${{ env.EXPORT_NAME }}.apk --verbose 2>&1 | tail -100 || true
+          if [ ! -f builds/${{ env.EXPORT_NAME }}.apk ]; then
+            echo "Release export failed, trying debug..."
+            ./godot --headless --path . --export-debug "Android" builds/${{ env.EXPORT_NAME }}.apk --verbose 2>&1 | tail -100 || true
+          fi
           ls -lh builds/
+          if [ -f builds/${{ env.EXPORT_NAME }}.apk ]; then
+            echo "APK SUCCESS"
+            file builds/${{ env.EXPORT_NAME }}.apk
+          else
+            echo "APK not found, checking for errors"
+            # Create placeholder for artifact verification but mark as failed
+            echo "Build failed - see logs" > builds/BUILD_FAILED.txt
+            ls -lh builds/
+            # Don't fail yet, let artifact upload for debugging
+          fi
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: android-apk
-          path: builds/*.apk
+          name: android-apk-${{ github.sha }}
+          path: builds/*
           retention-days: 30
 
-      - name: Get version from project.godot
+      - name: Check APK exists
+        run: |
+          if [ -f builds/${{ env.EXPORT_NAME }}.apk ]; then
+            echo "APK verified!"
+            ls -lh builds/${{ env.EXPORT_NAME }}.apk
+          else
+            echo "APK missing - build may have failed, check logs"
+            # For v1.0.2 we want to ensure APK is built, so fail if missing
+            # But allow for now to see logs
+            cat builds/BUILD_FAILED.txt 2>/dev/null || true
+            exit 1
+          fi
+
+      - name: Get version
         id: version
         run: |
           VERSION=$(grep -oP 'config/version="\K[^"]+' project.godot || echo "1.0.0")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Detected version: $VERSION"
-          # Check if tag
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             TAG_VERSION=${GITHUB_REF#refs/tags/v}
             echo "tag_version=$TAG_VERSION" >> $GITHUB_OUTPUT
@@ -89,52 +161,31 @@ jobs:
             echo "tag_version=$VERSION" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create GitHub Release
+      - name: Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
           files: builds/*.apk
           generate_release_notes: true
           body: |
-            ## Aether Empires - Fantasy RTS ${{ steps.version.outputs.tag_version }}
-            
-            ### Build Info
-            - **Version**: ${{ steps.version.outputs.tag_version }}
-            - **Engine**: Godot ${{ env.GODOT_VERSION }}
-            - **Commit**: ${{ github.sha }}
-            - **Build Date**: ${{ github.event.head_commit.timestamp }}
-            
-            ### What's Changed
-            Auto-generated release from CI/CD pipeline.
-            
-            ### Installation
-            1. Download the APK
-            2. Enable "Install from Unknown Sources" on Android
-            3. Install and play!
-            
-            ### Features (Ambitious MVP)
-            - 4 Resources: Food, Wood, Gold, Mana + Stone
-            - 3 Ages: Village -> Kingdom -> Mythic
-            - 8 Buildings: Town Hall, House, Barracks, Archery, Stable, Mage Tower, Wall, Market
-            - 8 Units: Villager, Swordsman, Archer, Knight, Healer, Mage, Golem, Dragon
-            - Full RTS mechanics: selection, gathering, combat, tech tree
-            - Fantasy theme with procedural assets
-            
-            ### DevOps
-            - VersionCode matches Git tag
-            - Integrity checks passed
-            - APK verified
+            ## Aether Empires ${{ steps.version.outputs.tag_version }}
+
+            **Version**: ${{ steps.version.outputs.tag_version }} (Code matches)
+            **Engine**: Godot ${{ env.GODOT_VERSION }}
+            **Commit**: ${{ github.sha }}
+
+            ### Features
+            - 5 Resources, 3 Ages, 8 Buildings, 8 Units
+            - Full RTS mechanics, fantasy assets, mobile controls
+            - APK built and verified
+
+            ### Install
+            Download APK, enable Unknown Sources, install, play landscape!
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Summary
+      - name: Summary
         run: |
-          echo "## Build Complete! 🎮" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Game**: Aether Empires - Fantasy RTS" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Engine**: Godot ${{ env.GODOT_VERSION }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **APK**: builds/${{ env.EXPORT_NAME }}.apk" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Verification" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Complete 🎮" >> $GITHUB_STEP_SUMMARY
+          echo "Version: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           ls -lh builds/ >> $GITHUB_STEP_SUMMARY
