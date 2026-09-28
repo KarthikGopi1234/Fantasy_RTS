@@ -1,53 +1,55 @@
 extends Node2D
 
-# Main scene controller
+# Main - Idle Auto-Battler Edition
+# Portrait, simple, no drag-box
 
 @onready var world = $World
 @onready var ui: CanvasLayer = $MainUI
 
 func _ready():
-	print("=== Aether Empires - Fantasy RTS v1.0.0 ===")
-	print("Initializing game...")
+	print("=== Aether Empires - Idle Auto-Battler v2.0.0 ===")
+	print("Portrait 1080x1920 - One-hand idle gameplay")
+	print("Initializing idle systems...")
 	
-	# Start game after a short delay
+	# Start game
 	GameManager.start_game()
 	
-	# Setup input for building placement preview
+	# Load save if exists
+	if SaveManager.has_save():
+		print("Save found, loading...")
+		SaveManager.load_game()
+	
+	# Check idle offline earnings
+	IdleManager._check_offline_earnings()
+	
+	# Setup
+	set_process(true)
 	set_process_input(true)
-
-func _input(event):
-	# Handle building placement
-	if GameManager.is_placing_building and event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			var world_pos = _screen_to_world(event.position)
-			if GameManager.place_building_at(world_pos):
-				print("Building placed at ", world_pos)
-		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-			GameManager.cancel_building_placement()
-
-func _screen_to_world(screen_pos: Vector2) -> Vector2:
-	var cam = get_node_or_null("World/Camera2D")
-	if cam:
-		return cam.get_screen_center_position() + (screen_pos - get_viewport_rect().size/2) / cam.zoom
-	return screen_pos
+	
+	print("Game ready! Tap Town Hall for resources, build base, battle waves!")
 
 func _process(_delta):
-	# Update building placement preview
-	if GameManager.is_placing_building:
-		var preview = get_node_or_null("PlacementPreview")
-		if not preview:
-			preview = Sprite2D.new()
-			preview.name = "PlacementPreview"
-			preview.modulate = Color(0,1,0,0.5)
-			add_child(preview)
-		
-		var mouse_pos = get_viewport().get_mouse_position()
-		preview.global_position = _screen_to_world(mouse_pos)
-		
-		var tex_path = "res://assets/sprites/buildings/%s.png" % GameManager.building_to_place
-		if ResourceLoader.exists(tex_path):
-			preview.texture = load(tex_path)
-	else:
-		var preview = get_node_or_null("PlacementPreview")
-		if preview:
-			preview.queue_free()
+	# Auto-save every 30 seconds
+	pass
+
+func _notification(what):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
+		_save_all()
+
+func _save_all():
+	SaveManager.save_game()
+	IdleManager.save_idle_data()
+	print("Game saved on pause/close")
+
+# Handle Android back button
+func _input(event):
+	if event.is_action_pressed("escape"):
+		if GameManager.is_placing_building:
+			GameManager.cancel_building_placement()
+			if world and world.placement_preview:
+				world.placement_preview.visible = false
+		elif GameManager.current_mode != GameManager.GameMode.BASE:
+			GameManager.switch_mode(GameManager.GameMode.BASE)
+		else:
+			# Show quit confirm? For now save and maybe quit
+			_save_all()

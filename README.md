@@ -1,222 +1,242 @@
-# Aether Empires - Fantasy RTS
+# Aether Empires - Idle Auto-Battler
 
-![Version](https://img.shields.io/badge/version-1.0.12-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![Engine](https://img.shields.io/badge/engine-Godot%204.4-green)
 ![Platform](https://img.shields.io/badge/platform-Android-orange)
 ![Build](https://github.com/KarthikGopi1234/Fantasy_RTS/actions/workflows/android_build.yml/badge.svg)
+![Orientation](https://img.shields.io/badge/orientation-Portrait-purple)
 
-**A mobile-first real-time strategy game reminiscent of Age of Empires, with a fantasy mythic twist. Built for Android.**
+**A mobile-first idle auto-battler inspired by Age of Empires, redesigned for one-hand portrait play. Build your empire, deploy armies in 3 lanes, and conquer waves!**
 
-> **Latest APK:** [v1.0.12 Release](https://github.com/KarthikGopi1234/Fantasy_RTS/releases/latest) - Properly signed, custom logo, installs correctly.
+> **Latest APK:** [v2.0.0 Release](https://github.com/KarthikGopi1234/Fantasy_RTS/releases/latest) - Idle Auto-Battler Edition, Portrait, Offline Earnings, Chests, Prestige!
 
-## 🎮 Game Overview
+## 🔄 v2.0.0 Redesign - Why Idle?
 
-### Fantasy Setting
-In the realm of Aetheria, mana flows as a resource alongside traditional materials. Lead Humans vs Orcs (expandable to Elves, Undead) through three ages of empire.
+**User Feedback:** *"The game does not work at all in this sense. I think the controls etc are just too complex for a touch screen. Let's maybe redesign it as a mobile focused game. Perhaps idle based?"*
 
-### Core Mechanics - Ambitious MVP
+**Solution:** Complete redesign from RTS drag-box micro to idle auto-battler:
+- ❌ Removed: Drag-box selection, right-click commands, precise unit movement
+- ✅ Added: Tap to deploy, auto-battle lanes, offline earnings, auto-queue, tap frenzy, chests, daily rewards, prestige
 
-#### Resources (5)
-- **Food** - Villagers, infantry
-- **Wood** - Buildings, archers  
-- **Gold** - Advanced units, tech
-- **Mana** - Magic units, mythic age
-- **Stone** - Defenses, golems
+## 🎮 Game Overview - Idle Auto-Battler
 
-#### Ages (3)
-1. **Village Age** - Basic economy, villagers, swordsmen
-2. **Kingdom Age** - Archers, knights, healers, markets, walls
-3. **Mythic Age** - Mages, golems, dragons, arcane tech
+### Core Concept
+**Build army → Tap lane to deploy → Combat auto-resolves → Focus on upgrades & tech**
 
-#### Buildings (8)
-- **Town Hall** - Produces villagers, age advancement, +5 pop
-- **House** - +5 population cap
-- **Barracks** - Swordsmen
-- **Archery Range** - Archers
-- **Stable** - Knights
-- **Mage Tower** - Mage, Golem, Dragon, Healer
-- **Wall** - Defense
-- **Market** - Trade
+One-hand portrait play, no micro, large touch targets, bottom nav.
 
-#### Units (8)
-- **Villager** - Gathers, builds (40 HP)
-- **Swordsman** - Basic melee (60 HP, 12 ATK)
-- **Archer** - Ranged (45 HP, 8 ATK, 120 range)
-- **Knight** - Heavy cavalry (120 HP, 18 ATK)
-- **Healer** - Support (50 HP, heals 10)
-- **Mage** - Magic damage (55 HP, 25 ATK)
-- **Golem** - Tank (250 HP, 30 ATK)
-- **Dragon** - Ultimate (400 HP, 45 ATK, flying)
+### Game Loop - Full Idle Progression
 
-### Controls - Mobile First
-- **Landscape only** - Optimized for RTS (AoE mobile style)
-- **Drag-box selection** - Select multiple units
-- **Tap to move** - Context-sensitive commands
-- **Tap resource/enemy** - Gather / Attack
-- **Build/Train menus** - Touch UI
+#### 1. Base (Idle)
+- **Town Hall** auto-generates Food + Gold, tap for frenzy bonus
+- **Resource buildings** (Lumber Camp, Market, Mage Tower, House) auto-produce Wood, Gold, Mana, Food
+- **Villagers** auto-gather (no micro needed)
+- **Barracks** etc auto-queue units when resources available
+
+#### 2. Army Building (Portrait Bottom Nav)
+- Bottom tabs: **Base | Army | Battle | Shop | Prestige** (80px tall, thumb-friendly)
+- **Base:** Tap to build/upgrade buildings (large buttons)
+- **Army:** See your army, upgrade units, research tech
+- **Battle:** Tap to deploy units in 3 lanes, auto-battle vs waves
+- **Shop:** Chests, daily rewards, idle upgrades
+- **Prestige:** Mythic reset for permanent bonuses
+
+#### 3. Battle (Auto-Battler - 3 Lanes)
+- 3 lanes (top, mid, bottom) - like Clash Royale / Plants vs Zombies
+- Enemies spawn from right, walk left
+- Player taps unit card (bottom scroll) then taps lane to deploy (costs Food/Gold/Mana)
+- Units auto-walk right, attack nearest enemy, use abilities auto
+- No selection, no move commands - just deploy and watch!
+- Win wave → Gold + Mana + Gems + Chest chance
+
+#### 4. Idle Systems (Full)
+- **Offline Earnings:** Calculates time away (up to 12h), gives resources based on buildings
+- **Auto-Queue:** Barracks etc auto-train if resources + pop available
+- **Tap Frenzy:** Tap Town Hall 25 times → x3 resources for 10s (like Cookie Clicker)
+- **Chests:** Common (100 Gold), Rare (400 Gold+10 Gems), Epic (1000 Gold+40 Gems), Mythic (150 Gems) - contain Gold, Gems, resources
+- **Daily Rewards:** 7-day streak, daily quests (Defeat 10 waves, Build 3 buildings, etc)
+- **Prestige (Mythic Reset):** Reset Village Age → gain Mythic Essence + permanent multipliers (x5% per prestige)
+- **Achievements:** First Blood, Builder (10 buildings), Legion (100 units), Veteran (Wave 25), Mythic Slayer (Wave 50), etc
+
+### Resources (5 + Gems)
+- **Food** - Villagers, Swordsmen, Archers
+- **Wood** - Buildings, Houses, Walls
+- **Gold** - Knights, upgrades, chests
+- **Mana** - Mages, Golems, Dragons, prestige
+- **Stone** - Walls, Golems, defenses
+- **Gems (NEW)** - Premium, from chests, daily, prestige, waves - speed up, buy chests
+
+### Buildings (8) - Idle Producers
+- **Town Hall** - Auto Food+Gold, tap frenzy, unlocks ages, +5 Pop
+- **House** - +5 Pop, +0.2 Food/s
+- **Lumber Camp** - +0.6 Wood/s
+- **Barracks** - Auto-queue Swordsmen
+- **Archery Range** - Auto-queue Archers
+- **Stable** - Auto-queue Knights
+- **Mage Tower** - Auto-queue Mage/Golem/Dragon, +0.5 Mana/s
+- **Wall** - Passive defense (future: blocks lane)
+- **Market** - +0.4 Gold/s, offline earnings x1.2
+
+### Units (8) - Auto-Battler
+- **Villager** - Auto-gathers (40 HP)
+- **Swordsman** - Tanky melee, walks, attacks nearest (80 HP, 15 ATK)
+- **Archer** - Ranged, 140 range, glass cannon (50 HP, 12 ATK)
+- **Knight** - Heavy, charge auto (150 HP, 22 ATK)
+- **Healer** - Heals nearby allies auto (60 HP, heal 15)
+- **Mage** - AoE magic, 160 range (65 HP, 30 ATK)
+- **Golem** - Super tank, 300 HP, slow
+- **Dragon** - Flying, 450 HP, breathes fire AoE (3 targets)
+
+### Tech Tree - Idle Upgrades
+- **Economy:** Wheelbarrow (+20% Food), Double-Bit Axe (+25% Wood), Gold Mining (+20% Gold), Stone Quarry (+30% Stone), Mana Attunement (+30% Mana)
+- **Military:** Forging (+3 ATK infantry), Scale Armor (+2 Armor +20 HP), Fletching (+3 ATK +20 Range archers), Bloodlines (+30 HP knights), Arcane Mastery (+50% Mage DMG), Dragon Taming (+25% Dragon HP), Golem Forging (+50 HP +5 ATK), Healing Light (+50% heal)
+- **Idle:** Offline Earnings I/II (+25%/+50%), Auto-Queue, Efficient Production (20% faster), Tap Frenzy, Frenzy Mastery (x4 +5s), Chest Luck (+15% rare), Market Efficiency (+20% Gold + offline x1.2)
+
+### Prestige Upgrades (Permanent)
+- **Eternal Harvest** - Food +10% per level (max 10)
+- **Midas Touch** - Gold +10% per level (max 10)
+- **Arcane Legacy** - Mana +15% per level (max 10)
+- **Master Builder** - Build speed +20% per level (max 5)
+- **Warlord Soul** - Unit HP+5% ATK+5% per level (max 10)
+- **Offline Mastery** - Offline +25% per level (max 5)
+- **Starting Boost** - Start with extra resources per level (max 5)
+
+## 📱 Controls - Mobile First Portrait
+
+- **Portrait 1080x1920** - One-hand play, thumb reachable bottom nav
+- **No drag-box** - Removed completely
+- **Tap to build** - Tap building card, then tap map to place
+- **Tap to deploy** - Tap unit card (bottom scroll) then tap lane (3 lanes)
+- **Tap to collect** - Tap resource nodes, Town Hall frenzy, chests
+- **Large buttons** - Bottom nav 80px tall, resource bar top, action bar 220px
+- **Auto everything** - Villagers auto-gather, buildings auto-produce, combat auto
+
+### UI Layout - Portrait Idle
+```
+Top: [🍖 Food] [🪵 Wood] [🪙 Gold] [🔮 Mana] [🪨 Stone] [💎 Gems]
+     [👥 Pop] [⚔️ Wave] [⏰ Time] [🔥 Frenzy]
+Middle: Game view (base or battle lanes)
+  Base: Grid of buildings, resource nodes with floating numbers, tap effects
+  Battle: 3 lanes with units walking, HP bars, lane highlights
+Center: Wave start / victory panel
+Action: Scrollable cards (Build, Units, Shop, Prestige) - horizontal scroll
+Bottom Nav: [🏠 Base] [⚔️ Army] [🔥 Battle] [🛒 Shop] [✨ Prestige] - large icons
+Popups: Chest opening, Daily Reward, Offline Earnings, Prestige confirm, Tap Frenzy
+```
 
 ## 📱 Installation
 
 ### From GitHub Release (Recommended)
 1. Go to [Releases](https://github.com/KarthikGopi1234/Fantasy_RTS/releases/latest)
-2. Download `AetherEmpires.apk` (105-120 MB)
+2. Download `AetherEmpires.apk` (~25 MB, non-gradle legacy build)
 3. Enable "Install from unknown sources" on Android
-4. Install APK - **Signed with persistent keystore, custom fantasy castle logo**
+4. Install APK - **Signed with persistent keystore, custom castle logo, portrait**
 
 ### Build Status
-- **v1.0.12** - ✅ Properly signed APK with custom logo, real Godot export, persistent keystore secret
+- **v2.0.0** - 🆕 Idle Auto-Battler redesign, portrait, offline, chests, prestige, full idle loop
+- **v1.0.12** - ✅ Properly signed APK with custom logo, real Godot export (25 MB, not 105 MB template)
+- **v1.0.11** - ✅ Same as 1.0.12 but version code 12
 - **v1.0.10** - ⚠️ Signed but used template APK (showed as godot-project-name-en)
-- **v1.0.9** - ⚠️ Unsigned fallback, no logo
+- **v1.0.9** - ⚠️ Unsigned fallback
 
 ## 🏗️ Project Structure
 
 ```
 Fantasy_RTS/
-├── assets/               # Procedurally generated (101 files)
-│   ├── icons/            # Resource & tech icons (app_icon_512.png custom logo)
+├── assets/               # Procedurally generated (120+ files)
+│   ├── icons/            # Resource icons + idle icons (chests, gems, daily, prestige, tap frenzy)
 │   ├── sprites/
 │   │   ├── buildings/    # 8 buildings x 3 ages
 │   │   ├── units/        # 8 units x 4 directions
 │   │   └── tiles/        # 8 tile types
-│   └── ui/               # Buttons, panels, bars
+│   └── ui/               # Buttons, panels, bars + lane markers, offline popup
 ├── scenes/
-│   ├── main.tscn         # Main game scene
-│   ├── units/Unit.tscn
-│   ├── buildings/Building.tscn
-│   └── ResourceNode.tscn
+│   ├── main.tscn         # Portrait 1080x1920 idle scene
+│   ├── units/Unit.tscn   # Auto-battler unit
+│   ├── buildings/Building.tscn # Idle producer building
+│   └── ResourceNode.tscn # Tap to collect
 ├── scripts/
-│   ├── autoload/         # GameManager, ResourceManager, TechTree, SaveManager
-│   ├── units/BaseUnit.gd # State machine: IDLE, MOVING, GATHERING, ATTACKING
-│   ├── buildings/BaseBuilding.gd
-│   └── systems/          # World, MapGenerator, MainUI
+│   ├── autoload/
+│   │   ├── GameManager.gd      # Idle state, waves, lanes, auto-queue
+│   │   ├── ResourceManager.gd  # Auto-gen, offline calc, frenzy, fractional buffer
+│   │   ├── TechTree.gd         # 3 ages + idle techs + building/unit stats
+│   │   ├── SaveManager.gd      # v2 save with wave + timestamp
+│   │   └── IdleManager.gd      # NEW: Offline, chests, daily, quests, prestige, achievements
+│   ├── units/BaseUnit.gd       # Auto lane movement, no micro, dragon breath AoE
+│   ├── buildings/BaseBuilding.gd # Idle gen, auto-queue, tap bonus, upgrade
+│   └── systems/
+│   │   ├── World.gd            # Lane auto-battler, tap handling, floating text
+│   │   ├── MapGenerator.gd     # Simple base decoration
+│   │   └── MainUI.gd           # Portrait idle UI, bottom nav, action bar, popups
+│   ├── Main.gd                 # Entry, save on pause
 ├── tools/
-│   ├── generate_assets.py      # Procedural art via Pillow
+│   ├── generate_assets.py      # Original fantasy assets
+│   ├── generate_idle_assets.py # NEW: Chests, gems, daily, prestige, lanes
 │   └── build_release_apk.py    # Real Godot export + zipalign + apksigner
 ├── .github/workflows/
-│   └── android_build.yml       # CI/CD: Java 17, SDK 34, Godot 4.4.1, persistent keystore
-├── export_presets.cfg          # Android: com.aetherempires.fantasyrts, landscape, arm64-v8a
-├── project.godot               # Godot 4.4, v1.0.12
+│   └── android_build.yml       # CI/CD: Java 17, SDK 34, Godot 4.4.1, non-gradle, persistent keystore
+├── export_presets.cfg          # Android: com.aetherempires.fantasyrts, portrait, arm64-v8a, v2.0.0 code 20
+├── project.godot               # Godot 4.4, viewport 1080x1920 portrait, 5 autoloads
 ├── icon.png                    # 512x512 fantasy castle (custom)
+├── VERSION                     # 2.0.0
 └── debug.jks                   # Persistent JKS keystore (also stored as GitHub Secret)
 ```
 
-## 🚀 DevOps - Four Tenets
+## 🔧 DevOps & Build
 
-### 1. Secure CI - Every Build Pushed via PAT
-- All commits pushed via PAT with repo+workflow scopes
-- GitHub Actions builds APK on every push to main/tags
-- Signing key stored as **GitHub Secret** `ANDROID_KEYSTORE_BASE64` for continuity between versions
+### Versioning Tenets (Strict)
+- **Tag == VERSION == project.godot == export_presets.cfg** - Must match exactly
+- **v2.0.0** = versionCode 20, versionName 2.0.0, portrait orientation
+- **APK Integrity:** apksigner verify v1+v2+v3 true, aapt2 dump badging package com.aetherempires.fantasyrts, label Aether Empires, custom icon
+- **CI/CD:** Every milestone push to main + tag via PAT, monitor Actions for success (~1 min non-gradle)
+- **Keystore Continuity:** Same debug.jks stored as ANDROID_KEYSTORE_BASE64 secret for updates
 
-### 2. Version Matching - Tag == VersionCode == VersionName
-- Git tag `v1.0.12` == `VERSION` file == `project.godot/config/version` == `export_presets.cfg/version/name` == `version/code=12`
-- Version only bumped on **successful** build (fixed from v1.0.0-1.0.9 failures)
-- Release notes auto-generated
-
-### 3. Integrity Checks - Before/After Push
-- Asset generation verified
-- Godot headless check
-- APK signature verified: `apksigner verify --verbose` must show `v1+v2+v3 true`
-- APK contents checked: `META-INF/MANIFEST.MF`, custom mipmap icons, PCK embedded
-- No regressions: game still launches
-
-### 4. Monitor Actions - Verify Artifact
-- Workflow monitors for APK artifact (100+ MB)
-- Artifact uploaded as `android-apk`
-- Release created on tag with APK
-- Install tested (no more "godot-project-name-en" or "Installation failed")
-
-## 🔧 Technical Details
-
-- **Engine:** Godot 4.4.1 (gl_compatibility for mobile)
-- **Language:** GDScript
-- **Pathfinding:** NavigationAgent2D
-- **AI:** State machine (IDLE, MOVING, GATHERING, ATTACKING)
-- **Population:** AoE-style cap via Houses
-- **Orientation:** Landscape only (orientation=1)
-- **Min SDK:** 21, Target SDK: 34
-- **Arch:** arm64-v8a
-- **Signing:** JKS keystore, RSA 2048, v1+v2+v3, zipaligned, persistent across versions via Secret
-
-## 🎨 Asset Pipeline
-
-All assets procedurally generated via `tools/generate_assets.py` using Pillow:
-
-- **App Icon:** 512x512 fantasy castle with dragon, fire breath, flags, night sky (replaces Godot default)
-- **Resources:** 64x64 circular icons (food, wood, gold, mana, stone)
-- **Tiles:** 64x64 with noise (grass, dirt, forest, gold vein, mana crystal, etc.)
-- **Buildings:** 128x128 chibi castles with age tints
-- **Units:** 64x64 chibi with directional variants, shadows, weapons
-- **UI:** Buttons (normal/hover/pressed/disabled), panels, health bars, selection circles
-
-Run locally:
+### Local Build
 ```bash
-python tools/generate_assets.py
-```
-
-## 🛠️ Local Development
-
-```bash
-# Clone
-git clone https://github.com/KarthikGopi1234/Fantasy_RTS.git
-cd Fantasy_RTS
-
 # Generate assets
-pip install pillow
-python tools/generate_assets.py
+python3 tools/generate_assets.py
+python3 tools/generate_idle_assets.py
 
-# Run with Godot 4.4
-godot --path .
-
-# Export Android (requires Android SDK + templates)
+# Export APK (requires Godot 4.4 headless)
 godot --headless --export-release Android builds/AetherEmpires.apk
 
-# Build signed APK (real export + sign)
-python tools/build_release_apk.py
+# Verify
+apksigner verify --verbose builds/AetherEmpires.apk
+aapt2 dump badging builds/AetherEmpires.apk | grep -E "package|label|icon"
 ```
 
-### Android SDK Setup (for local)
-```bash
-# Install cmdline-tools, build-tools 34.0.0, platforms android-34
-# Set ANDROID_HOME
-export ANDROID_HOME=$HOME/android-sdk
-```
+## 🎯 Roadmap - Idle Expansion
 
-## 📦 Releases
+### v2.0 Done
+- [x] Portrait 1080x1920
+- [x] 3-lane auto-battler
+- [x] Offline earnings (12h cap)
+- [x] Auto-queue
+- [x] Tap frenzy (25 taps → x3 10s)
+- [x] Chests (Common, Rare, Epic, Mythic)
+- [x] Daily rewards (7-day streak)
+- [x] Daily quests (3 random)
+- [x] Prestige (Mythic reset) + 7 permanent upgrades
+- [x] Achievements (8)
+- [x] Full idle tech tree (Economy, Military, Idle)
 
-- **v1.0.12** (code 12) - **CURRENT** - Real Godot export, properly signed with persistent keystore secret, custom logo, package com.aetherempires.fantasyrts, name "Aether Empires", installs correctly
-- **v1.0.10** (code 11) - Signed but used template APK only (bug: godot-project-name-en, default icon, install failed)
-- **v1.0.9** (code 10) - First successful artifact (122M) but unsigned, no logo, fallback method
-- **v1.0.0-1.0.8** - Failed builds (SDK setup, gradle issues, GH001 errors)
-
-## 🔐 Signing & Continuity
-
-- **Keystore:** `debug.jks` (JKS, 2048-bit RSA, validity 10000 days, alias androiddebugkey)
-- **Stored:** 
-  - In repo (tracked) for local builds
-  - As GitHub Secret `ANDROID_KEYSTORE_BASE64` (base64) for CI continuity
-  - Passwords as secrets: `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`
-- **Signing:** `apksigner` with v1+v2+v3, `zipalign -p 4` before signing
-- **Verification:** `apksigner verify --verbose` must pass, `META-INF/MANIFEST.MF` present
-- **Continuity:** Same keystore used for all versions, enabling Android updates without uninstall
-
-## 🗺️ Roadmap
-
-- **v1.1** - Fog of war, minimap, formations
-- **v1.2** - Campaign mode, Elves/Undead factions
-- **v1.3** - Multiplayer (local), walls connection
-- **v2.0** - Full tech tree, hero units, spells
+### v2.1 Planned
+- [ ] More prestige upgrades (10+)
+- [ ] Seasonal events
+- [ ] Guild / leaderboard (offline)
+- [ ] More chest types (Seasonal)
+- [ ] Unit skins (cosmetic gems)
+- [ ] Cloud save
 
 ## 📄 License
+MIT - Feel free to fork and expand!
 
-MIT - Feel free to expand!
-
-## 👾 Credits
-
-- Engine: Godot 4.4.1
-- Design: AoE-inspired, Fantasy twist
-- Art: Procedural via Python/Pillow
-- DevOps: GitHub Actions CI/CD with persistent signing
+## 🙏 Credits
+- **Engine:** Godot 4.4
+- **Art:** Procedural via Pillow (no external assets)
+- **Design:** Inspired by Age of Empires + Clash Royale + Cookie Clicker + Idle Miner
+- **Redesign Feedback:** Touch controls too complex → Idle Auto-Battler portrait
 
 ---
 
-**Built with ❤️ for mobile RTS fans - Now properly signed and installable!**
+**Aether Empires v2.0.0 - Idle Auto-Battler - Built for one-hand portrait play! 🏰⚔️💎**
