@@ -1,35 +1,29 @@
 extends Node2D
 
-# Main - Idle Auto-Battler Edition
-# Portrait, simple, no drag-box
+# Main - Polished v2.1.0 Idle Auto-Battler
+# Portrait 720x1280, fixed orientation, splash handled separately
 
 @onready var world = $World
 @onready var ui: CanvasLayer = $MainUI
 
 func _ready():
-	print("=== Aether Empires - Idle Auto-Battler v2.0.0 ===")
-	print("Portrait 1080x1920 - One-hand idle gameplay")
-	print("Initializing idle systems...")
+	print("=== Aether Empires - Idle Auto-Battler v2.1.0 ===")
+	print("Portrait 720x1280 - Polished - Splash + Menu + Fixed UI")
 	
-	# Start game
 	GameManager.start_game()
 	
-	# Load save if exists
 	if SaveManager.has_save():
 		print("Save found, loading...")
 		SaveManager.load_game()
 	
-	# Check idle offline earnings
 	IdleManager._check_offline_earnings()
 	
-	# Setup
 	set_process(true)
 	set_process_input(true)
 	
-	print("Game ready! Tap Town Hall for resources, build base, battle waves!")
+	print("Game ready! Tap Town Hall, build base, battle waves!")
 
 func _process(_delta):
-	# Auto-save every 30 seconds
 	pass
 
 func _notification(what):
@@ -39,9 +33,8 @@ func _notification(what):
 func _save_all():
 	SaveManager.save_game()
 	IdleManager.save_idle_data()
-	print("Game saved on pause/close")
+	print("Saved on pause/close")
 
-# Handle Android back button
 func _input(event):
 	if event.is_action_pressed("escape"):
 		if GameManager.is_placing_building:
@@ -51,5 +44,6 @@ func _input(event):
 		elif GameManager.current_mode != GameManager.GameMode.BASE:
 			GameManager.switch_mode(GameManager.GameMode.BASE)
 		else:
-			# Show quit confirm? For now save and maybe quit
+			# Go to menu instead of quit
 			_save_all()
+			get_tree().change_scene_to_file("res://scenes/Menu.tscn")

@@ -6,7 +6,7 @@
 [ext_resource type="Script" path="res://scripts/systems/MainUI.gd" id="4_ui"]
 
 [sub_resource type="StyleBoxFlat" id="1_style"]
-bg_color = Color(0.12, 0.12, 0.18, 0.9)
+bg_color = Color(0.12, 0.12, 0.18, 0.92)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -18,26 +18,26 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="2_topbar"]
-bg_color = Color(0.08, 0.1, 0.15, 0.95)
-border_width_bottom = 2
+bg_color = Color(0.08, 0.1, 0.18, 0.96)
+border_width_bottom = 3
 border_color = Color(0.5, 0.4, 0.2, 1)
 
 [sub_resource type="StyleBoxFlat" id="3_bottomnav"]
-bg_color = Color(0.1, 0.1, 0.15, 0.95)
-border_width_top = 2
+bg_color = Color(0.1, 0.1, 0.16, 0.96)
+border_width_top = 3
 border_color = Color(0.5, 0.4, 0.2, 1)
 
 [sub_resource type="StyleBoxFlat" id="4_actionbar"]
-bg_color = Color(0.15, 0.12, 0.1, 0.9)
-border_width_top = 1
+bg_color = Color(0.15, 0.12, 0.1, 0.92)
+border_width_top = 2
 border_color = Color(0.3, 0.25, 0.2, 1)
 
 [sub_resource type="StyleBoxFlat" id="5_center"]
-bg_color = Color(0.05, 0.05, 0.1, 0.85)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
+bg_color = Color(0.06, 0.06, 0.12, 0.9)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
 border_color = Color(0.6, 0.5, 0.2, 1)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
@@ -50,6 +50,11 @@ script = ExtResource("1_main")
 [node name="World" type="Node2D" parent="."]
 script = ExtResource("2_world")
 
+[node name="BackgroundSprite" type="Sprite2D" parent="World"]
+centered = false
+position = Vector2(0, 0)
+z_index = -20
+
 [node name="Units" type="Node2D" parent="World"]
 
 [node name="Buildings" type="Node2D" parent="World"]
@@ -61,24 +66,14 @@ z_index = 10
 
 [node name="MapGenerator" type="Node2D" parent="World"]
 script = ExtResource("3_mapgen")
-map_width = 1080
-map_height = 1920
+map_width = 720
+map_height = 1280
 
 [node name="Camera2D" type="Camera2D" parent="World"]
-zoom = Vector2(1, 1)
-position = Vector2(540, 960)
+zoom = Vector2(1.2, 1.2)
+position = Vector2(360, 640)
 limit_smoothed = true
 position_smoothing_enabled = true
-
-[node name="Background" type="ColorRect" parent="."]
-color = Color(0.0980392, 0.156863, 0.219608, 1)
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-z_index = -10
 
 [node name="MainUI" type="CanvasLayer" parent="."]
 script = ExtResource("4_ui")
@@ -86,89 +81,89 @@ script = ExtResource("4_ui")
 [node name="TopBar" type="Panel" parent="MainUI"]
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 120.0
+offset_bottom = 100.0
 grow_horizontal = 2
 add_theme_stylebox_override("panel", SubResource("2_topbar"))
 
 [node name="FoodLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 10.0
-offset_top = 8.0
-offset_right = 180.0
-offset_bottom = 36.0
-text = "🍖 500"
-add_theme_font_size_override("font_size", 20)
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 120.0
+offset_bottom = 28.0
+text = "Food: 500"
+add_theme_font_size_override("font_size", 14)
 
 [node name="WoodLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 185.0
-offset_top = 8.0
-offset_right = 355.0
-offset_bottom = 36.0
-text = "🪵 400"
-add_theme_font_size_override("font_size", 20)
+offset_left = 125.0
+offset_top = 6.0
+offset_right = 235.0
+offset_bottom = 28.0
+text = "Wood: 400"
+add_theme_font_size_override("font_size", 14)
 
 [node name="GoldLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 360.0
-offset_top = 8.0
-offset_right = 530.0
-offset_bottom = 36.0
-text = "🪙 300"
-add_theme_font_size_override("font_size", 20)
+offset_left = 240.0
+offset_top = 6.0
+offset_right = 350.0
+offset_bottom = 28.0
+text = "Gold: 300"
+add_theme_font_size_override("font_size", 14)
 
 [node name="ManaLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 535.0
-offset_top = 8.0
-offset_right = 705.0
-offset_bottom = 36.0
-text = "🔮 200"
-add_theme_font_size_override("font_size", 20)
+offset_left = 355.0
+offset_top = 6.0
+offset_right = 465.0
+offset_bottom = 28.0
+text = "Mana: 200"
+add_theme_font_size_override("font_size", 14)
 
 [node name="StoneLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 710.0
-offset_top = 8.0
-offset_right = 880.0
-offset_bottom = 36.0
-text = "🪨 200"
-add_theme_font_size_override("font_size", 20)
+offset_left = 470.0
+offset_top = 6.0
+offset_right = 580.0
+offset_bottom = 28.0
+text = "Stone: 200"
+add_theme_font_size_override("font_size", 14)
 
 [node name="GemsLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 885.0
-offset_top = 8.0
-offset_right = 1060.0
-offset_bottom = 36.0
-text = "💎 50"
-add_theme_font_size_override("font_size", 20)
+offset_left = 585.0
+offset_top = 6.0
+offset_right = 710.0
+offset_bottom = 28.0
+text = "Gems: 50"
+add_theme_font_size_override("font_size", 14)
 
 [node name="PopulationLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 10.0
-offset_top = 44.0
-offset_right = 180.0
-offset_bottom = 70.0
-text = "👥 5/15"
-add_theme_font_size_override("font_size", 18)
+offset_left = 8.0
+offset_top = 32.0
+offset_right = 140.0
+offset_bottom = 54.0
+text = "Pop: 5/15"
+add_theme_font_size_override("font_size", 13)
 
 [node name="WaveLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 185.0
-offset_top = 44.0
-offset_right = 500.0
-offset_bottom = 70.0
-text = "⚔️ Wave 1 Ready"
-add_theme_font_size_override("font_size", 18)
+offset_left = 145.0
+offset_top = 32.0
+offset_right = 360.0
+offset_bottom = 54.0
+text = "Wave 1 Ready"
+add_theme_font_size_override("font_size", 13)
 
 [node name="TimeLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 510.0
-offset_top = 44.0
-offset_right = 620.0
-offset_bottom = 70.0
+offset_left = 365.0
+offset_top = 32.0
+offset_right = 450.0
+offset_bottom = 54.0
 text = "00:00"
-add_theme_font_size_override("font_size", 16)
+add_theme_font_size_override("font_size", 12)
 
 [node name="FrenzyLabel" type="Label" parent="MainUI/TopBar"]
-offset_left = 630.0
-offset_top = 44.0
-offset_right = 1060.0
-offset_bottom = 70.0
+offset_left = 455.0
+offset_top = 32.0
+offset_right = 710.0
+offset_bottom = 54.0
 text = ""
-add_theme_font_size_override("font_size", 16)
+add_theme_font_size_override("font_size", 12)
 
 [node name="CenterPanel" type="Panel" parent="MainUI"]
 anchors_preset = 8
@@ -176,10 +171,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -150.0
-offset_right = 300.0
-offset_bottom = 150.0
+offset_left = -200.0
+offset_top = -120.0
+offset_right = 200.0
+offset_bottom = 120.0
 grow_horizontal = 2
 grow_vertical = 2
 visible = true
@@ -192,7 +187,7 @@ anchor_bottom = 1.0
 offset_left = 10.0
 offset_top = 10.0
 offset_right = -10.0
-offset_bottom = -60.0
+offset_bottom = -50.0
 text = "Welcome to Aether Empires!
 Idle Auto-Battler
 
@@ -203,31 +198,31 @@ Tap START to begin Wave 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
-add_theme_font_size_override("font_size", 20)
+add_theme_font_size_override("font_size", 16)
 
 [node name="WaveProgress" type="ProgressBar" parent="MainUI/CenterPanel"]
-offset_left = 20.0
-offset_top = 220.0
-offset_right = 580.0
-offset_bottom = 240.0
+offset_left = 15.0
+offset_top = 180.0
+offset_right = 385.0
+offset_bottom = 195.0
 max_value = 100.0
 value = 0.0
 show_percentage = false
 visible = false
 
 [node name="StartWaveButton" type="Button" parent="MainUI/CenterPanel"]
-offset_left = 150.0
-offset_top = 250.0
-offset_right = 450.0
-offset_bottom = 300.0
-text = "⚔️ START WAVE"
+offset_left = 80.0
+offset_top = 200.0
+offset_right = 320.0
+offset_bottom = 235.0
+text = "START WAVE"
 
 [node name="ActionBar" type="Panel" parent="MainUI"]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -360.0
+offset_top = -260.0
 grow_horizontal = 2
 grow_vertical = 0
 add_theme_stylebox_override("panel", SubResource("4_actionbar"))
@@ -236,10 +231,10 @@ add_theme_stylebox_override("panel", SubResource("4_actionbar"))
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = -10.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
 vertical_scroll_mode = 0
@@ -255,78 +250,50 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -140.0
-offset_bottom = -0.0
+offset_top = -100.0
 grow_horizontal = 2
 grow_vertical = 0
 add_theme_stylebox_override("panel", SubResource("3_bottomnav"))
 
 [node name="BaseButton" type="Button" parent="MainUI/BottomNav"]
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 200.0
-offset_bottom = 90.0
-text = "🏠 Base"
-add_theme_font_size_override("font_size", 20)
+offset_left = 6.0
+offset_top = 8.0
+offset_right = 138.0
+offset_bottom = 70.0
+text = "Base"
+add_theme_font_size_override("font_size", 14)
 
 [node name="ArmyButton" type="Button" parent="MainUI/BottomNav"]
-offset_left = 210.0
-offset_top = 10.0
-offset_right = 400.0
-offset_bottom = 90.0
-text = "⚔️ Army"
-add_theme_font_size_override("font_size", 20)
+offset_left = 144.0
+offset_top = 8.0
+offset_right = 276.0
+offset_bottom = 70.0
+text = "Army"
+add_theme_font_size_override("font_size", 14)
 
 [node name="BattleButton" type="Button" parent="MainUI/BottomNav"]
-offset_left = 410.0
-offset_top = 10.0
-offset_right = 600.0
-offset_bottom = 90.0
-text = "🔥 Battle"
-add_theme_font_size_override("font_size", 20)
+offset_left = 282.0
+offset_top = 8.0
+offset_right = 414.0
+offset_bottom = 70.0
+text = "Battle"
+add_theme_font_size_override("font_size", 14)
 
 [node name="ShopButton" type="Button" parent="MainUI/BottomNav"]
-offset_left = 610.0
-offset_top = 10.0
-offset_right = 800.0
-offset_bottom = 90.0
-text = "🛒 Shop"
-add_theme_font_size_override("font_size", 20)
+offset_left = 420.0
+offset_top = 8.0
+offset_right = 552.0
+offset_bottom = 70.0
+text = "Shop"
+add_theme_font_size_override("font_size", 14)
 
 [node name="PrestigeButton" type="Button" parent="MainUI/BottomNav"]
-offset_left = 810.0
-offset_top = 10.0
-offset_right = 1060.0
-offset_bottom = 90.0
-text = "✨ Prestige"
-add_theme_font_size_override("font_size", 20)
-
-[node name="BuildMenu" type="Panel" parent="MainUI"]
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -200.0
-offset_right = 250.0
-offset_bottom = 200.0
-grow_horizontal = 2
-grow_vertical = 2
-add_theme_stylebox_override("panel", SubResource("1_style"))
-
-[node name="QuestPanel" type="Panel" parent="MainUI"]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -320.0
-offset_top = 130.0
-offset_right = -10.0
-offset_bottom = 350.0
-grow_horizontal = 0
-visible = false
-add_theme_stylebox_override("panel", SubResource("1_style"))
+offset_left = 558.0
+offset_top = 8.0
+offset_right = 710.0
+offset_bottom = 70.0
+text = "Prestige"
+add_theme_font_size_override("font_size", 14)
 
 [node name="PopupPanel" type="Panel" parent="MainUI"]
 visible = false
@@ -335,10 +302,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -280.0
-offset_top = -200.0
-offset_right = 280.0
-offset_bottom = 200.0
+offset_left = -180.0
+offset_top = -140.0
+offset_right = 180.0
+offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 add_theme_stylebox_override("panel", SubResource("5_center"))
@@ -347,19 +314,19 @@ add_theme_stylebox_override("panel", SubResource("5_center"))
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 15.0
-offset_top = 15.0
-offset_right = -15.0
-offset_bottom = -60.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -50.0
 text = "Popup"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
-add_theme_font_size_override("font_size", 20)
+add_theme_font_size_override("font_size", 14)
 
 [node name="PopupButton" type="Button" parent="MainUI/PopupPanel"]
-offset_left = 180.0
-offset_top = 340.0
-offset_right = 380.0
-offset_bottom = 380.0
+offset_left = 110.0
+offset_top = 240.0
+offset_right = 250.0
+offset_bottom = 270.0
 text = "OK"
